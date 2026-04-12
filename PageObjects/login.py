@@ -1,0 +1,24 @@
+from selenium.webdriver.common.by import By
+
+from PageObjects.shopPage import ShopPage
+from Utils.browserutils import BrowserUtils
+
+
+class LoginPage(BrowserUtils):
+    def __init__(self, driver):          # self is class instance, 1st parameter/argument for all class methods
+        super().__init__(driver)         # initialise parent class constructor , BrowserUtils is parent class here
+        self.driver = driver
+        self.username_input = (By.ID, "username")
+        self.password = (By.NAME, "password")
+        self.sign_button = (By.ID, "signInBtn")
+
+
+
+    def login(self, username, password):
+        self.driver.find_element(*self.username_input).send_keys(username)
+        # (*self.username_input): tuple breaks down and splits into 2 parameters as find element expects 2 args
+        self.driver.find_element(*self.password).send_keys(password)
+        self.driver.find_element(*self.sign_button).click()
+        shop_page = ShopPage(self.driver)
+        return shop_page
+
