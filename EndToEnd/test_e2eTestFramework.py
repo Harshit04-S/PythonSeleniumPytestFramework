@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 import pytest
@@ -12,8 +13,11 @@ from selenium.webdriver.chrome.options import Options
 from PageObjects.login import LoginPage
 from PageObjects.shopPage import ShopPage
 
+# Get current file directory (EndToEnd folder)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
 # for reading data from json data file
-test_data_path = '../Data/test_e2eTestFramework.json'
+test_data_path = os.path.join(current_dir, "..", "Data", "test_e2eTestFramework.json")
 with open(test_data_path) as f:
     test_data = json.load(f)         # test_data: python object
     test_list = test_data["data"]
