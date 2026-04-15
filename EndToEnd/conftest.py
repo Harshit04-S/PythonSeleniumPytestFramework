@@ -28,8 +28,11 @@ def browserInstance(request):
 
     driver.implicitly_wait(5)
     driver.get("https://rahulshettyacademy.com/loginpagePractise/")
+
+    request.node.driver = driver
+
     yield driver  # Before test function execution
-    driver.close()  # post your test function execution
+    driver.quit()  # post your test function execution
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -39,32 +42,35 @@ def pytest_runtest_makereport(item):
     report = outcome.get_result()
     extra = getattr(report, 'extra', [])
 
-    if report.when in ("call", "setup"):
-        xfail = hasattr(report, 'wasxfail')
+    if report.when == "call" and report.failed:
 
-        if (report.skipped and xfail) or (report.failed and not xfail):
+        project_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
+        reports_dir = os.path.join(project_root, "Reports")
+        os.makedirs(reports_dir, exist_ok=True)
 
-            reports_dir = os.path.join(os.getcwd(), 'reports')
-            os.makedirs(reports_dir, exist_ok=True)
+        file_name = report.nodeid.replace("::", "_") + ".png"
+        file_path = os.path.join(reports_dir, file_name)
 
-            file_name = report.nodeid.replace("::", "_") + ".png"
-            file_path = os.path.join(reports_dir, file_name)
+        _capture_screenshot(file_path)
 
-            _capture_screenshot(file_path)
+        html = f'''
+                    <div>
+                        <img src="{file_name}" alt="screenshot"
+                        style="width:304px;height:228px;"
+                        onclick="window.open(this.src)" align="right"/>
+                    </div>
+                    '''
 
-            html = f'''
-            <div>
-                <img src="reports/{file_name}" alt="screenshot"
-                style="width:304px;height:228px;"
-                onclick="window.open(this.src)" align="right"/>
-            </div>
-            '''
-
-            extra.append(pytest_html.extras.html(html))
+        extra.append(pytest_html.extras.html(html))
 
     report.extras = extra
 
 
 def _capture_screenshot(file_path):
     driver.get_screenshot_as_file(file_path)
+
+    success = driver.get_screenshot_as_file(file_path)
+    print("Screenshot saved:", success)
+    print("File path:", file_path)
+    print("Exists:", os.path.exists(file_path))
 
